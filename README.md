@@ -1,5 +1,7 @@
 # claude-session-saver
 
+<!-- keywords: claude code session expired, claude code 5 hour limit, claude max plan quota reset, keep claude code alive, prevent claude session timeout, claude code background agent, launchd claude, claude code mac automation -->
+
 [![Platform](https://img.shields.io/badge/platform-macOS-lightgrey?logo=apple)](https://www.apple.com/macos/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Shell](https://img.shields.io/badge/shell-bash-green?logo=gnubash)](claude-keep-alive.sh)
