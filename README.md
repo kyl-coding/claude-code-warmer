@@ -1,6 +1,6 @@
 # claude-session-saver
 
-<!-- keywords: claude code session expired, claude code 5 hour limit, claude max plan quota reset, keep claude code alive, prevent claude session timeout, claude code background agent, launchd claude, claude code mac automation -->
+<!-- keywords: claude code session expired, claude code 5 hour limit, claude pro plan quota reset, claude max plan quota reset, claude max 5x quota, claude max 20x quota, keep claude code alive, prevent claude session timeout, claude code background agent, launchd claude, claude code mac automation -->
 
 [![Platform](https://img.shields.io/badge/platform-macOS-lightgrey?logo=apple)](https://www.apple.com/macos/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
@@ -11,7 +11,7 @@
 
 ## Why?
 
-Claude Code Max resets its usage quota on a rolling 5-hour window. If no activity occurs within that window, the session expires and you lose whatever quota remained. This is especially painful mid-task or overnight.
+Claude Code resets its usage quota on a rolling 5-hour window — this affects all paid plans: Pro, Max, Max 5x, and Max 20x. If no activity occurs within that window, the session expires and you lose whatever quota remained. This is especially painful mid-task or overnight.
 
 `claude-session-saver` prevents that by pinging Claude every 4 hours via a macOS `launchd` agent. Set it and forget it.
 
