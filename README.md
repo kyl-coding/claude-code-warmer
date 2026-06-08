@@ -16,10 +16,10 @@ Claude Code's Max subscription resets available usage on a rolling 5-hour window
 A `launchd` agent runs the following command every 4 hours:
 
 ```
-claude --print --model claude-haiku-4-5-20251001 -p "hi"
+claude --print --model haiku -p "hi"
 ```
 
-Haiku is the fastest and cheapest Claude model — each ping costs a fraction of a cent and completes in under 3 seconds.
+Haiku is the fastest and cheapest Claude model — each ping costs a fraction of a cent and completes in under 3 seconds. The `haiku` alias always resolves to the latest Haiku version, so no version suffix is needed.
 
 ## Requirements
 

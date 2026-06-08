@@ -42,7 +42,7 @@ log "Found claude at: $CLAUDE_BIN"
 # ── Execute keep-alive ping ────────────────────────────────────────────────────
 log "Sending keep-alive ping..."
 
-if "$CLAUDE_BIN" --print --model claude-haiku-4-5-20251001 -p "hi" >/dev/null 2>&1; then
+if "$CLAUDE_BIN" --print --model haiku -p "hi" >/dev/null 2>&1; then
     log "Keep-alive ping succeeded."
     exit 0
 else
