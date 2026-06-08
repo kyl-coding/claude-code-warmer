@@ -7,9 +7,19 @@
 
 Keeps your Claude Code session alive by sending a lightweight ping every 4 hours, preventing the 5-hour usage window from expiring.
 
+## Why?
+
+Claude Code's Max subscription resets available usage on a rolling 5-hour window. If no activity occurs within that window, the session expires and you lose any remaining quota. This tool pings Claude every 4 hours in the background so the window never closes on you.
+
 ## How it works
 
-A `launchd` agent runs `claude --print --model claude-haiku-4-5-20251001 -p "hi"` every 4 hours in the background. The Haiku model is used to minimize token cost.
+A `launchd` agent runs the following command every 4 hours:
+
+```
+claude --print --model claude-haiku-4-5-20251001 -p "hi"
+```
+
+Haiku is the fastest and cheapest Claude model — each ping costs a fraction of a cent and completes in under 3 seconds.
 
 ## Requirements
 
@@ -26,9 +36,29 @@ cd claude-code-warmer
 
 The installer will:
 
-1. Copy `claude-keep-alive.sh` to `~/.local/bin/`
-2. Generate a `launchd` plist at `~/Library/LaunchAgents/com.user.claude.keepalive.plist`
-3. Load the agent immediately (first ping fires right away via `RunAtLoad`)
+1. Verify that `claude` is installed and reachable
+2. Copy `claude-keep-alive.sh` to `~/.local/bin/`
+3. Generate a `launchd` plist at `~/Library/LaunchAgents/com.user.claude.keepalive.plist`
+4. Load the agent immediately (first ping fires right away via `RunAtLoad`)
+
+**Example output:**
+
+```
+[2026-06-08 18:16:01] Checking for claude binary...
+[2026-06-08 18:16:01] ✓ Found claude at: /usr/local/bin/claude
+[2026-06-08 18:16:01] Installing keep-alive script...
+[2026-06-08 18:16:01] ✓ Script installed to /Users/you/.local/bin/claude-keep-alive.sh
+[2026-06-08 18:16:01] ✓ Plist written to ~/Library/LaunchAgents/com.user.claude.keepalive.plist
+[2026-06-08 18:16:01] ✓ Agent loaded and running.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  claude-code-warmer installed successfully!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Interval  every 4 hours
+  Script    /Users/you/.local/bin/claude-keep-alive.sh
+  Logs      /Users/you/Library/Logs/claude-code-warmer/
+```
 
 ## Logs
 
@@ -47,9 +77,16 @@ tail -f ~/Library/Logs/claude-code-warmer/stderr.log
 launchctl list | grep com.user.claude.keepalive
 
 # Uninstall
-launchctl unload ~/Library/LaunchAgents/com.user.claude.keepalive.plist
-rm ~/Library/LaunchAgents/com.user.claude.keepalive.plist
+./uninstall.sh
 ```
+
+## Uninstall
+
+```bash
+./uninstall.sh
+```
+
+The uninstaller stops the agent, removes the plist and script, and optionally deletes the logs.
 
 ## File layout
 
@@ -57,6 +94,8 @@ rm ~/Library/LaunchAgents/com.user.claude.keepalive.plist
 claude-code-warmer/
 ├── claude-keep-alive.sh   # Keep-alive script (called by launchd)
 ├── install.sh             # One-click macOS installer
+├── uninstall.sh           # Cleaner removal
+├── LICENSE
 └── README.md
 ```
 

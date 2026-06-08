@@ -2,17 +2,27 @@
 # install.sh — One-click installer for claude-code-warmer on macOS.
 #
 # What it does:
-#   1. Copies claude-keep-alive.sh to ~/.local/bin/
-#   2. Generates a launchd .plist (interval: 14400 s = 4 h)
-#   3. Loads the agent via launchctl so it starts immediately
+#   1. Verifies claude is installed
+#   2. Copies claude-keep-alive.sh to ~/.local/bin/
+#   3. Generates a launchd .plist (interval: 14400 s = 4 h)
+#   4. Loads the agent via launchctl so it starts immediately
 
 set -euo pipefail
 
+# ── Colors ─────────────────────────────────────────────────────────────────────
+if [[ -t 1 ]]; then
+    GREEN='\033[0;32m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; BOLD='\033[1m'; RESET='\033[0m'
+else
+    GREEN=''; YELLOW=''; RED=''; BOLD=''; RESET=''
+fi
+
 # ── Logging helpers ────────────────────────────────────────────────────────────
-ts()  { date '+%Y-%m-%d %H:%M:%S'; }
-log() { echo "[$(ts)] $*"; }
-err() { echo "[$(ts)] ERROR: $*" >&2; }
-die() { err "$*"; exit 1; }
+ts()   { date '+%Y-%m-%d %H:%M:%S'; }
+log()  { echo -e "[$(ts)] $*"; }
+ok()   { echo -e "[$(ts)] ${GREEN}✓${RESET} $*"; }
+warn() { echo -e "[$(ts)] ${YELLOW}⚠${RESET}  $*"; }
+err()  { echo -e "[$(ts)] ${RED}✗ ERROR:${RESET} $*" >&2; }
+die()  { err "$*"; exit 1; }
 
 # ── Platform guard ─────────────────────────────────────────────────────────────
 [[ "$(uname -s)" == "Darwin" ]] || die "This installer only supports macOS."
@@ -37,29 +47,45 @@ INTERVAL=14400   # 4 hours in seconds
 # ── Preflight checks ───────────────────────────────────────────────────────────
 [[ -f "$SRC_SCRIPT" ]] || die "Source script not found: $SRC_SCRIPT"
 
-# ── Step 1: Install the keep-alive script ─────────────────────────────────────
-log "Creating bin directory: $BIN_DIR"
-mkdir -p "$BIN_DIR"
+log "Checking for claude binary..."
+CLAUDE_BIN=""
+if command -v claude >/dev/null 2>&1; then
+    CLAUDE_BIN="$(command -v claude)"
+else
+    for candidate in \
+        "$HOME/.local/bin/claude" \
+        "$HOME/.npm-global/bin/claude" \
+        "/usr/local/bin/claude" \
+        "/opt/homebrew/bin/claude" \
+        "/usr/bin/claude"
+    do
+        if [[ -x "$candidate" ]]; then
+            CLAUDE_BIN="$candidate"
+            break
+        fi
+    done
+fi
 
-log "Installing keep-alive script to: $DEST_SCRIPT"
+if [[ -z "$CLAUDE_BIN" ]]; then
+    die "claude binary not found. Install Claude Code first:\n       npm install -g @anthropic-ai/claude-code"
+fi
+ok "Found claude at: $CLAUDE_BIN"
+
+# ── Step 1: Install the keep-alive script ─────────────────────────────────────
+log "Installing keep-alive script..."
+mkdir -p "$BIN_DIR" "$LAUNCH_AGENTS_DIR" "$LOG_DIR"
 cp "$SRC_SCRIPT" "$DEST_SCRIPT"
 chmod 755 "$DEST_SCRIPT"
+ok "Script installed to $DEST_SCRIPT"
 
-# ── Step 2: Create log directory ──────────────────────────────────────────────
-log "Creating log directory: $LOG_DIR"
-mkdir -p "$LOG_DIR"
-
-# ── Step 3: Create LaunchAgents directory if missing ──────────────────────────
-mkdir -p "$LAUNCH_AGENTS_DIR"
-
-# ── Step 4: Unload any previously loaded version ──────────────────────────────
+# ── Step 2: Unload any previously loaded version ──────────────────────────────
 if launchctl list | grep -q "$PLIST_LABEL" 2>/dev/null; then
-    log "Unloading existing launchd job: $PLIST_LABEL"
+    warn "Existing agent found — reloading..."
     launchctl unload "$PLIST_PATH" 2>/dev/null || true
 fi
 
-# ── Step 5: Generate the .plist ───────────────────────────────────────────────
-log "Generating plist: $PLIST_PATH"
+# ── Step 3: Generate the .plist ───────────────────────────────────────────────
+log "Generating launchd plist..."
 cat > "$PLIST_PATH" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
@@ -75,11 +101,9 @@ cat > "$PLIST_PATH" <<PLIST
         <string>${DEST_SCRIPT}</string>
     </array>
 
-    <!-- Run every ${INTERVAL} seconds ($(( INTERVAL / 3600 )) hours) -->
     <key>StartInterval</key>
     <integer>${INTERVAL}</integer>
 
-    <!-- Also run once shortly after the agent is loaded -->
     <key>RunAtLoad</key>
     <true/>
 
@@ -89,7 +113,6 @@ cat > "$PLIST_PATH" <<PLIST
     <key>StandardErrorPath</key>
     <string>${STDERR_LOG}</string>
 
-    <!-- Restart automatically if the script exits non-zero -->
     <key>KeepAlive</key>
     <dict>
         <key>SuccessfulExit</key>
@@ -101,29 +124,29 @@ cat > "$PLIST_PATH" <<PLIST
 </dict>
 </plist>
 PLIST
-
 chmod 644 "$PLIST_PATH"
+ok "Plist written to $PLIST_PATH"
 
-# ── Step 6: Load the launchd agent ────────────────────────────────────────────
+# ── Step 4: Load the launchd agent ────────────────────────────────────────────
 log "Loading launchd agent..."
 if launchctl load "$PLIST_PATH"; then
-    log "Agent loaded successfully."
+    ok "Agent loaded and running."
 else
     die "launchctl load failed. Check $PLIST_PATH for errors."
 fi
 
 # ── Done ───────────────────────────────────────────────────────────────────────
-log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-log "Installation complete!"
-log ""
-log "  Script   : $DEST_SCRIPT"
-log "  Plist    : $PLIST_PATH"
-log "  Interval : every $(( INTERVAL / 3600 )) hours"
-log "  Stdout   : $STDOUT_LOG"
-log "  Stderr   : $STDERR_LOG"
-log ""
-log "Useful commands:"
-log "  Check status : launchctl list | grep $PLIST_LABEL"
-log "  View logs    : tail -f $STDOUT_LOG"
-log "  Uninstall    : launchctl unload $PLIST_PATH && rm $PLIST_PATH"
-log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+echo -e "${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
+echo -e "${GREEN}${BOLD}  claude-code-warmer installed successfully!${RESET}"
+echo -e "${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
+echo ""
+echo -e "  ${BOLD}Interval${RESET}  every $(( INTERVAL / 3600 )) hours"
+echo -e "  ${BOLD}Script${RESET}    $DEST_SCRIPT"
+echo -e "  ${BOLD}Logs${RESET}      $LOG_DIR/"
+echo ""
+echo -e "  ${BOLD}Useful commands:${RESET}"
+echo -e "  ${YELLOW}Check status${RESET}  launchctl list | grep $PLIST_LABEL"
+echo -e "  ${YELLOW}View logs${RESET}     tail -f $STDOUT_LOG"
+echo -e "  ${YELLOW}Uninstall${RESET}     ./uninstall.sh"
+echo ""

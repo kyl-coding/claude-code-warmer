@@ -13,8 +13,6 @@ CLAUDE_BIN=""
 
 if command -v claude >/dev/null 2>&1; then
     CLAUDE_BIN="$(command -v claude)"
-elif command -v which >/dev/null 2>&1; then
-    CLAUDE_BIN="$(which claude 2>/dev/null || true)"
 fi
 
 # Fallback: check common installation paths
