@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# uninstall.sh — Remove claude-code-warmer from macOS.
+# uninstall.sh — Remove claude-session-saver from macOS.
 
 set -euo pipefail
 
@@ -17,10 +17,10 @@ err() { echo -e "${RED}✗${RESET} $*" >&2; }
 PLIST_LABEL="com.user.claude.keepalive"
 PLIST_PATH="$HOME/Library/LaunchAgents/${PLIST_LABEL}.plist"
 DEST_SCRIPT="$HOME/.local/bin/claude-keep-alive.sh"
-LOG_DIR="$HOME/Library/Logs/claude-code-warmer"
+LOG_DIR="$HOME/Library/Logs/claude-session-saver"
 
 echo ""
-echo -e "${BOLD}Uninstalling claude-code-warmer...${RESET}"
+echo -e "${BOLD}Uninstalling claude-session-saver...${RESET}"
 echo ""
 
 # Unload launchd agent
@@ -56,5 +56,5 @@ if [[ -d "$LOG_DIR" ]]; then
 fi
 
 echo ""
-echo -e "${GREEN}${BOLD}Done. claude-code-warmer has been removed.${RESET}"
+echo -e "${GREEN}${BOLD}Done. claude-session-saver has been removed.${RESET}"
 echo ""

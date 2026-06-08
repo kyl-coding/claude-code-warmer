@@ -1,15 +1,17 @@
-# claude-code-warmer
+# claude-session-saver
 
 [![Platform](https://img.shields.io/badge/platform-macOS-lightgrey?logo=apple)](https://www.apple.com/macos/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Shell](https://img.shields.io/badge/shell-bash-green?logo=gnubash)](claude-keep-alive.sh)
 [![launchd](https://img.shields.io/badge/scheduler-launchd-orange)](https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/CreatingLaunchdJobs.html)
 
-Keeps your Claude Code session alive by sending a lightweight ping every 4 hours, preventing the 5-hour usage window from expiring.
+**Never lose your Claude Code session again.** Sends a lightweight ping every 4 hours to prevent the 5-hour usage window from expiring — automatically, in the background, with zero configuration after install.
 
 ## Why?
 
-Claude Code's Max subscription resets available usage on a rolling 5-hour window. If no activity occurs within that window, the session expires and you lose any remaining quota. This tool pings Claude every 4 hours in the background so the window never closes on you.
+Claude Code Max resets its usage quota on a rolling 5-hour window. If no activity occurs within that window, the session expires and you lose whatever quota remained. This is especially painful mid-task or overnight.
+
+`claude-session-saver` prevents that by pinging Claude every 4 hours via a macOS `launchd` agent. Set it and forget it.
 
 ## How it works
 
@@ -29,8 +31,8 @@ Haiku is the fastest and cheapest Claude model — each ping costs a fraction of
 ## Install
 
 ```bash
-git clone https://github.com/kyl-coding/claude-code-warmer.git
-cd claude-code-warmer
+git clone https://github.com/kyl-coding/claude-session-saver.git
+cd claude-session-saver
 ./install.sh
 ```
 
@@ -52,22 +54,22 @@ The installer will:
 [2026-06-08 18:16:01] ✓ Agent loaded and running.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  claude-code-warmer installed successfully!
+  claude-session-saver installed successfully!
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   Interval  every 4 hours
   Script    /Users/you/.local/bin/claude-keep-alive.sh
-  Logs      /Users/you/Library/Logs/claude-code-warmer/
+  Logs      /Users/you/Library/Logs/claude-session-saver/
 ```
 
 ## Logs
 
 ```bash
 # Live stdout
-tail -f ~/Library/Logs/claude-code-warmer/stdout.log
+tail -f ~/Library/Logs/claude-session-saver/stdout.log
 
 # Live stderr
-tail -f ~/Library/Logs/claude-code-warmer/stderr.log
+tail -f ~/Library/Logs/claude-session-saver/stderr.log
 ```
 
 ## Status & management
@@ -91,13 +93,30 @@ The uninstaller stops the agent, removes the plist and script, and optionally de
 ## File layout
 
 ```
-claude-code-warmer/
+claude-session-saver/
 ├── claude-keep-alive.sh   # Keep-alive script (called by launchd)
 ├── install.sh             # One-click macOS installer
 ├── uninstall.sh           # Cleaner removal
 ├── LICENSE
 └── README.md
 ```
+
+## FAQ
+
+**Does this cost anything?**
+Each ping uses the Haiku model (`claude --model haiku`), which is Anthropic's cheapest tier. Estimated cost: ~$0.001 per ping, ~$0.18/month.
+
+**Will it work after my Mac sleeps?**
+Yes. `launchd` reschedules missed jobs automatically when the Mac wakes up.
+
+**Does it interfere with my active Claude Code sessions?**
+No. The ping runs as a completely separate background process.
+
+**How do I know it's working?**
+```bash
+tail -f ~/Library/Logs/claude-session-saver/stdout.log
+```
+You should see a `Keep-alive ping succeeded` line every 4 hours.
 
 ## License
 

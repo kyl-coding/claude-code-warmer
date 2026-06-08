@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# install.sh — One-click installer for claude-code-warmer on macOS.
+# install.sh — One-click installer for claude-session-saver on macOS.
 #
 # What it does:
 #   1. Verifies claude is installed
@@ -38,7 +38,7 @@ PLIST_LABEL="com.user.claude.keepalive"
 LAUNCH_AGENTS_DIR="$HOME/Library/LaunchAgents"
 PLIST_PATH="$LAUNCH_AGENTS_DIR/${PLIST_LABEL}.plist"
 
-LOG_DIR="$HOME/Library/Logs/claude-code-warmer"
+LOG_DIR="$HOME/Library/Logs/claude-session-saver"
 STDOUT_LOG="$LOG_DIR/stdout.log"
 STDERR_LOG="$LOG_DIR/stderr.log"
 
@@ -138,7 +138,7 @@ fi
 # ── Done ───────────────────────────────────────────────────────────────────────
 echo ""
 echo -e "${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
-echo -e "${GREEN}${BOLD}  claude-code-warmer installed successfully!${RESET}"
+echo -e "${GREEN}${BOLD}  claude-session-saver installed successfully!${RESET}"
 echo -e "${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
 echo ""
 echo -e "  ${BOLD}Interval${RESET}  every $(( INTERVAL / 3600 )) hours"
