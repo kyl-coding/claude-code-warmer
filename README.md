@@ -1,5 +1,10 @@
 # claude-code-warmer
 
+[![Platform](https://img.shields.io/badge/platform-macOS-lightgrey?logo=apple)](https://www.apple.com/macos/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Shell](https://img.shields.io/badge/shell-bash-green?logo=gnubash)](claude-keep-alive.sh)
+[![launchd](https://img.shields.io/badge/scheduler-launchd-orange)](https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/CreatingLaunchdJobs.html)
+
 Keeps your Claude Code session alive by sending a lightweight ping every 4 hours, preventing the 5-hour usage window from expiring.
 
 ## How it works
@@ -14,7 +19,7 @@ A `launchd` agent runs `claude --print --model claude-haiku-4-5-20251001 -p "hi"
 ## Install
 
 ```bash
-git clone https://github.com/fortuneli/claude-code-warmer.git
+git clone https://github.com/kyl-coding/claude-code-warmer.git
 cd claude-code-warmer
 ./install.sh
 ```
