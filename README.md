@@ -1,19 +1,32 @@
 # claude-session-saver
 
-<!-- keywords: claude code session expired, claude code 5 hour limit, claude pro plan quota reset, claude max plan quota reset, claude max 5x quota, claude max 20x quota, keep claude code alive, prevent claude session timeout, claude code background agent, launchd claude, claude code mac automation -->
+<!-- keywords: claude code 5 hour window, claude code token limit, maximize claude subscription, claude pro max tokens per day, claude code quota reset, claude max 5x 20x token window, get more tokens claude code, claude code usage window hack, launchd claude mac -->
 
 [![Platform](https://img.shields.io/badge/platform-macOS-lightgrey?logo=apple)](https://www.apple.com/macos/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Shell](https://img.shields.io/badge/shell-bash-green?logo=gnubash)](claude-keep-alive.sh)
 [![launchd](https://img.shields.io/badge/scheduler-launchd-orange)](https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/CreatingLaunchdJobs.html)
 
-**Never lose your Claude Code session again.** Sends a lightweight ping every 4 hours to prevent the 5-hour usage window from expiring — automatically, in the background, with zero configuration after install.
+**Get the most out of your Claude Code subscription.** Automatically activates each new 5-hour token window the moment it opens — so you always have fresh tokens ready, without thinking about it.
 
 ## Why?
 
-Claude Code resets its usage quota on a rolling 5-hour window — this affects all paid plans: Pro, Max, Max 5x, and Max 20x. If no activity occurs within that window, the session expires and you lose whatever quota remained. This is especially painful mid-task or overnight.
+Claude Code (Pro, Max, Max 5x, Max 20x) allocates tokens in rolling **5-hour windows**. Once you exhaust a window, you wait for the next one to open before you get more tokens.
 
-`claude-session-saver` prevents that by pinging Claude every 4 hours via a macOS `launchd` agent. Set it and forget it.
+The catch: a new window only opens after 5 hours have passed **since your last usage**. If you're not actively using Claude, that clock isn't ticking — meaning you could be sitting idle between windows longer than necessary.
+
+`claude-session-saver` pings Claude every 4 hours in the background, ensuring each new token window is activated as soon as it's available. More windows per day = more tokens = more value from your subscription.
+
+```
+Without claude-session-saver          With claude-session-saver
+─────────────────────────────         ─────────────────────────────
+ 9:00  Use Claude (window opens)       9:00  Use Claude (window opens)
+ 9:45  Tokens exhausted                9:45  Tokens exhausted
+       ... waiting ...                13:00  ✓ Auto-ping (new window opens)
+15:00  Remember to check Claude        13:00  Fresh tokens available ✓
+15:00  New window opens (finally)      17:00  ✓ Auto-ping (new window opens)
+       5+ hours wasted                        Maximum windows used
+```
 
 ## How it works
 
@@ -23,12 +36,12 @@ A `launchd` agent runs the following command every 4 hours:
 claude --print --model haiku -p "hi"
 ```
 
-Haiku is the fastest and cheapest Claude model — each ping costs a fraction of a cent and completes in under 3 seconds. The `haiku` alias always resolves to the latest Haiku version, so no version suffix is needed.
+Haiku is the fastest and cheapest Claude model — each ping completes in under 3 seconds. The `haiku` alias always resolves to the latest Haiku version automatically.
 
 ## Requirements
 
 - macOS
-- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) installed and authenticated
+- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) installed and authenticated (Pro, Max, Max 5x, or Max 20x plan)
 
 ## Install
 
@@ -105,8 +118,8 @@ claude-session-saver/
 
 ## FAQ
 
-**Does this cost anything?**
-Each ping uses the Haiku model (`claude --model haiku`), which is Anthropic's cheapest tier. Estimated cost: ~$0.001 per ping, ~$0.18/month.
+**Does this cost extra money?**
+No. The ping uses your existing Claude subscription. Each ping consumes a negligible amount of tokens (a single "hi" on Haiku).
 
 **Will it work after my Mac sleeps?**
 Yes. `launchd` reschedules missed jobs automatically when the Mac wakes up.
